@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
 
+import image_helper
 
 class image_converter:
 
@@ -19,6 +20,8 @@ class image_converter:
     rospy.init_node('image_processing', anonymous=True)
     # initialize a publisher to send images from camera2 to a topic named image_topic2
     self.image_pub2 = rospy.Publisher("image_topic2",Image, queue_size = 1)
+    # initialize a publisher to send joint coordinates from camera1 to joints1
+    self.joints_pub2 = rospy.Publisher("joints2", Float64MultiArray, queue_size = 10)
     # initialize a subscriber to recieve messages rom a topic named /robot/camera1/image_raw and use callback function to recieve data
     self.image_sub2 = rospy.Subscriber("/camera2/robot/image_raw",Image,self.callback2)
     # initialize the bridge between openCV and ROS
@@ -35,11 +38,21 @@ class image_converter:
     # Uncomment if you want to save the image
     #cv2.imwrite('image_copy.png', cv_image)
     im2=cv2.imshow('window2', self.cv_image2)
-    cv2.waitKey(1)
+    cv2.waitKey(0)
+
+    red = image_helper.detect_red(self.cv_image2)
+    blue = image_helper.detect_blue(self.cv_image2)
+    green = image_helper.detect_green(self.cv_image2)
+    yellow = image_helper.detect_yellow(self.cv_image2)
+
+    self.coords = Float64MultiArray()
+    self.coords.data = np.array([red, blue, green, yellow]).flatten()
+
 
     # Publish the results
     try: 
       self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.cv_image2, "bgr8"))
+      self.joints_pub2.publish(self.coords)
     except CvBridgeError as e:
       print(e)
 

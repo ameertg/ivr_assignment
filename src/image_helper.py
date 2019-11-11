@@ -73,8 +73,6 @@ def match_template(image, template):
         continue
       shape = mask[y:y+height, x:x+width]
       shape = cv2.resize(shape, (template.shape[1], template.shape[0]), interpolation=cv2.INTER_AREA)
-      cv2.imshow('i', shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]])
-      cv2.waitKey(0)
 
       sums.append(np.sum(shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]]))
       

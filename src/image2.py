@@ -56,15 +56,17 @@ class image_converter:
     ball = image_helper.match_template(self.cv_image2, self.ball_template)
     # Compute the coordinates of the centre of the ball
     self.ball_coords = Point()
-    if ball.size > 0:
-        M = cv2.moments(ball)
-        self.ball_coords.x = np.nan
-        self.ball_coords.y = int(M['m10']/M['m00'])
-        self.ball_coords.z = int(M['m01']/M['m00'])
-    else:
+
+    if ball is None:
         self.ball_coords.x = np.nan
         self.ball_coords.y = np.nan
         self.ball_coords.z = np.nan
+    else:
+        M = cv2.moments(ball)
+        self.ball_coords.x = int(M['m10']/M['m00'])
+        self.ball_coords.y = np.nan
+        self.ball_coords.z = int(M['m01']/M['m00'])
+
 
     # Publish the results
     try: 

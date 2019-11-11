@@ -60,15 +60,15 @@ class image_converter:
     # Compute the coordinates of the centre of the ball
     self.ball_coords = Point()
 
-    if ball.size > 0:
+    if ball is None:
+        self.ball_coords.x = np.nan
+        self.ball_coords.y = np.nan
+        self.ball_coords.z = np.nan
+    else:
         M = cv2.moments(ball)
         self.ball_coords.x = int(M['m10']/M['m00'])
         self.ball_coords.y = np.nan
         self.ball_coords.z = int(M['m01']/M['m00'])
-    else:
-        self.ball_coords.x = np.nan
-        self.ball_coords.y = np.nan
-        self.ball_coords.z = np.nan
 
 
     im1=cv2.imshow('window1', self.cv_image1)

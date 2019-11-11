@@ -18,8 +18,12 @@ def detect_red(image):
     # Obtain the moments of the binary image
     M = cv2.moments(mask)
     # Calculate pixel coordinates for the centre of the blob
-    cx = int(M['m10'] / M['m00'])
-    cy = int(M['m01'] / M['m00'])
+    # Compute centres and set to (np.nan, np.nan) if occluded
+    if M['m00'] < 5:
+      cx = cy = np.nan
+    else:
+      cx = int(M['m10'] / M['m00'])
+      cy = int(M['m01'] / M['m00'])
     return np.array([cx, cy])
  
 
@@ -29,8 +33,11 @@ def detect_green(image):
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.dilate(mask, kernel, iterations=3)
     M = cv2.moments(mask)
-    cx = int(M['m10'] / M['m00'])
-    cy = int(M['m01'] / M['m00'])
+    if M['m00'] < 5:
+      cx = cy = np.nan
+    else:
+      cx = int(M['m10'] / M['m00'])
+      cy = int(M['m01'] / M['m00'])
     return np.array([cx, cy])
 
 
@@ -40,8 +47,11 @@ def detect_blue(image):
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.dilate(mask, kernel, iterations=3)
     M = cv2.moments(mask)
-    cx = int(M['m10'] / M['m00'])
-    cy = int(M['m01'] / M['m00'])
+    if M['m00'] < 5:
+      cx = cy = np.nan
+    else:
+      cx = int(M['m10'] / M['m00'])
+      cy = int(M['m01'] / M['m00'])
     return np.array([cx, cy])
 
   # Detecting the centre of the yellow circle
@@ -50,8 +60,11 @@ def detect_yellow(image):
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.dilate(mask, kernel, iterations=3)
     M = cv2.moments(mask)
-    cx = int(M['m10'] / M['m00'])
-    cy = int(M['m01'] / M['m00'])
+    if M['m00'] < 5:
+      cx = cy = np.nan
+    else:
+      cx = int(M['m10'] / M['m00'])
+      cy = int(M['m01'] / M['m00'])
     return np.array([cx, cy])
 
 def isolate_orange(image):
@@ -60,12 +73,12 @@ def isolate_orange(image):
     return contours
 
 def match_template(image, template):
+    threshold = 60000 # Threshold value for max error allowed for match
     sums = []
     contours = isolate_orange(image)
     mask = np.zeros(image.shape)
     mask = cv2.inRange(cv2.drawContours(mask, contours, -1, (255, 255, 255), 1), (200, 200, 200), (255, 255, 255))
     dist = cv2.distanceTransform(cv2.bitwise_not(mask), cv2.DIST_C, 0)
-
     for contour in contours:
       x, y, width, height = cv2.boundingRect(contour)
       if width <= 1 or height <= 1:
@@ -75,9 +88,10 @@ def match_template(image, template):
       shape = cv2.resize(shape, (template.shape[1], template.shape[0]), interpolation=cv2.INTER_AREA)
 
       sums.append(np.sum(shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]]))
-      
-  
-    return(contours[np.argmin(sums)])
+    print(sums)
+    image = cv2.drawContours(image, contours[np.argmin(sums)], -1, (255), 3)
+    # Return contour with minimum distance if min. dist. is less than threshold
+    return(contours[np.argmin(sums)] if np.min(sums)<threshold else None)
       
 
 

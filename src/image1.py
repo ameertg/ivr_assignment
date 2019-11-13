@@ -28,8 +28,6 @@ class image_converter:
     self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw",Image,self.callback1)
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
-    # initialize publisher to write orange ball coordinates to target1
-    self.target_pub1 = rospy.Publisher("target1", Point, queue_size=1)
 
 
   # Recieve data from camera 1, process it, and publish
@@ -49,35 +47,29 @@ class image_converter:
     green = image_helper.detect_green(self.cv_image1)
     yellow = image_helper.detect_yellow(self.cv_image1)
 
-    # Write coords to Float64MultiArray
-    self.coords = Float64MultiArray()
-    self.coords.data = np.array([red, blue, green, yellow]).flatten()
+
 
     # Load template files
     self.ball_template = cv2.inRange(cv2.imread("ball1.png"), (200, 200, 200), (255, 255, 255))
     # Detect orange ball
     ball = image_helper.match_template(self.cv_image1, self.ball_template)
     # Compute the coordinates of the centre of the ball
-    self.ball_coords = Point()
-
     if ball is None:
-        self.ball_coords.x = np.nan
-        self.ball_coords.y = np.nan
-        self.ball_coords.z = np.nan
+        ball_coords = (np.nan, np.nan)
     else:
         M = cv2.moments(ball)
-        self.ball_coords.x = int(M['m10']/M['m00'])
-        self.ball_coords.y = np.nan
-        self.ball_coords.z = int(M['m01']/M['m00'])
+        ball_coords = (int(M['m10']/M['m00']), int(M['m01']/M['m00']))
 
 
+    self.coords = Float64MultiArray()
+    self.coords.data = np.array([red, green, blue, yellow, ball_coords]).flatten()
     im1=cv2.imshow('window1', self.cv_image1)
     cv2.waitKey(1)
+
     # Publish the results
     try: 
       self.joints_pub1.publish(self.coords)
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.cv_image1, "bgr8"))
-      self.target_pub1.publish(self.ball_coords)
     except CvBridgeError as e:
       print(e)
 

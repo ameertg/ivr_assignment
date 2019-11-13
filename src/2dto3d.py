@@ -6,6 +6,7 @@ import rospy
 import cv2
 import numpy as np
 import message_filters
+import math
 from std_msgs.msg import String
 from geometry_msgs.msg import Point
 from std_msgs.msg import Float64MultiArray, Float64
@@ -27,14 +28,41 @@ class compute_dimensions:
 
   # Callback function for joints
   def knit_joints(self,data1, data2):
+    self.joint_coords = [0 for i in range(5)]
     # Separate message data into individual joints in 2d
-    red1, blue1, green1, yellow1 = zip(*[iter(data1.data)]*2)
-    red2, blue2, green2, yellow2= zip(*[iter(data2.data)]*2)
-    
+    joints1 = zip(*[iter(data1.data)]*2)
+    x1 = np.array([x for x, z in joints1])
+    joints2 = zip(*[iter(data2.data)]*2)
+    y1 = np.array([y for y, z in joints2])
+
     # Check for occlusion
-    if np.nan in green1:
-      if np.isclose(green2[1], yellow2[1]):
-        green = [yellow1[0], green2[0], green2[1]]
+    for i in range(len(joints1)):
+      if math.isnan(joints1[i][0]):
+        y, z = joints2[i]
+        ys = y1
+        ys[np.isnan(x1)] = np.nan
+        closest_y = np.nanargmin(ys - y)
+        x = joints2[closest_y][0]
+        self.joint_coords[i] = (x, y, z)
+
+      elif math.isnan(joints2[i][0]):
+        x, z = joints1[i]
+        xs = x1
+        xs[np.isnan(y1)] = np.nan
+        closest_x = np.nanargmin(xs - x)
+        y = joints2[closest_x][0]
+        self.joint_coords[i] = (x, y, z)
+
+      else:
+        x, z1 = joints1[i]
+        y, z2 = joints2[i]
+        self.joint_coords[i] = (x, y, (z1+z2)/2)
+
+    
+
+    # Scale and center
+    self.joint_coords = np.array(self.joint_coords) - np.array(self.joint_coords[3])
+    self.joint_coords = self.joint_coords * (2 / self.joint_coords[2][2])
 
 
 # call the class

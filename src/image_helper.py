@@ -88,11 +88,10 @@ def match_template(image, template):
       shape = cv2.resize(shape, (template.shape[1], template.shape[0]), interpolation=cv2.INTER_AREA)
 
       sums.append(np.sum(shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]]))
-    print(sums)
+
     image = cv2.drawContours(image, contours[np.argmin(sums)], -1, (255), 3)
     # Return contour with minimum distance if min. dist. is less than threshold
     return(contours[np.argmin(sums)] if np.min(sums)<threshold else None)
-      
 
 
 

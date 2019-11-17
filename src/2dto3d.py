@@ -10,6 +10,8 @@ import math
 from std_msgs.msg import String
 from geometry_msgs.msg import Point
 from std_msgs.msg import Float64MultiArray, Float64
+from scipy.optimize import least_squares
+from math import sin, cos
 
 
 import image_helper
@@ -61,8 +63,16 @@ class compute_dimensions:
     
 
     # Scale and center
-    self.joint_coords = np.array(self.joint_coords) - np.array(self.joint_coords[3])
+    self.joint_coords = np.array(self.joint_coords) - np.array(self.joint_coords[0])
     self.joint_coords = self.joint_coords * (2 / self.joint_coords[2][2])
+    
+    
+    def f(x):
+      a, b, c = tuple(x)
+      return np.array([(2*sin(a)*sin(b)*cos(c) + 3*sin(a)*sin(b) + 2*sin(c)*cos(a)) - self.joint_coords[3][0], 2*sin(a)*sin(c) - 2*sin(b)*cos(a)*cos(c) - 3*sin(b)*cos(a) - self.joint_coords[3][1], 2*cos(b)*cos(c) + 3*cos(b) + 2], - self.joint_coords[3][2])
+
+    
+    print(least_squares(f, np.zeros(3), bounds=(-0.5*np.pi, 0.5*np.pi)))
 
 
 # call the class

@@ -50,7 +50,7 @@ class image_converter:
 
 
     # Load template files
-    self.ball_template = cv2.inRange(cv2.imread("ball1.png"), (200, 200, 200), (255, 255, 255))
+    self.ball_template = cv2.inRange(cv2.imread("src/ivr_assignment/ball1.png"), (200, 200, 200), (255, 255, 255))
     # Detect orange ball
     ball = image_helper.match_template(self.cv_image1, self.ball_template)
     # Compute the coordinates of the centre of the ball
@@ -62,7 +62,7 @@ class image_converter:
 
 
     self.coords = Float64MultiArray()
-    self.coords.data = np.array([red, green, blue, yellow, ball_coords]).flatten()
+    self.coords.data = np.array([yellow, blue, green, red, ball_coords]).flatten()
     im1=cv2.imshow('window1', self.cv_image1)
     cv2.waitKey(1)
 

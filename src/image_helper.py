@@ -73,7 +73,7 @@ def isolate_orange(image):
     return contours
 
 def match_template(image, template):
-    threshold = 60000 # Threshold value for max error allowed for match
+    threshold = 6000 # Threshold value for max error allowed for match
     sums = []
     contours = isolate_orange(image)
     mask = np.zeros(image.shape)

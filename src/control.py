@@ -19,12 +19,6 @@ class controller:
     # initialize the node named image_processing
     rospy.init_node('controller', anonymous=True)
 
-    # initialize a publisher to send joints' angular position to a topic called joints_pos
-    #self.joints_pub = rospy.Publisher("joints_pos",Float64MultiArray, queue_size=10)
-    # initialize a publisher to send robot end-effector position
-    #self.end_effector_pub = rospy.Publisher("end_effector_prediction",Float64MultiArray, queue_size=10)
-    # initialize a publisher to send desired trajectory
-    #self.trajectory_pub = rospy.Publisher("trajectory",Float64MultiArray, queue_size=10)
     # initialize a publisher to send joints' angular position to the robot
     self.robot_joint1_pub = rospy.Publisher("/robot/joint1_position_controller/command", Float64, queue_size=10)
     self.robot_joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command", Float64, queue_size=10)
@@ -33,19 +27,20 @@ class controller:
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
-    self.robot_pos_sub = rospy.Subscriber("/robot/joint_states",JointState,self.callback)
+    #self.robot_pos_sub = rospy.Subscriber("/robot/joint_states",JointState,self.callback)
+    self.robot_pos_sub = rospy.Subscriber("/joints",Float64MultiArray,self.callback)
     self.target_pos_sub = rospy.Subscriber("/target/joint_states",JointState,self.targetPosCallback)
     # record the begining time
     self.time_trajectory = rospy.get_time()
     # initialize errors
     self.time_previous_step = np.array([rospy.get_time()], dtype='float64')     
     self.time_previous_step2 = np.array([rospy.get_time()], dtype='float64')   
-    # initialize error and derivative of error for trajectory tracking  
+
     self.error = np.array([0.0,0.0,0.0], dtype='float64')  
     self.error_d = np.array([0.0,0.0,0.0], dtype='float64') 
 
     self.end_effector_position = np.array([0.0,0.0,0.0,0.0])
-    self.target_position = np.array([0.0,0.0,0.0,0.0])
+    self.target_position = np.array([0.0,0.0,0.0])
 
   def trajectory(self):
     # get current time
@@ -64,7 +59,7 @@ class controller:
     dt = cur_time - self.time_previous_step
     self.time_previous_step = cur_time
 
-    # robot end-effector position
+    # robot end-effector position (xyz)
     pos = control_helper.forward_kinematics(position)
     # desired trajectory
     pos_d= self.target_position
@@ -74,7 +69,7 @@ class controller:
     self.error = pos_d-pos
 
     #end effector position (angles)
-    q = position#self.detect_joint_angles(image) # estimate initial value of joints'
+    q = position
     print("end effector: {}".format(pos))
     print("target: {}".format(self.target_position))
     J_inv = np.linalg.pinv(control_helper.calculate_jacobian(q))  # calculating the psudeo inverse of Jacobian
@@ -99,7 +94,7 @@ class controller:
     #self.end_effector.data= x_e_image	
 
     # send control commands to joints (lab 3)
-    q_d = self.control_closed(data.position)
+    q_d = self.control_closed(data.data)
     #q_d = self.control_open(cv_image)
     self.joint1=Float64()
     self.joint1.data= q_d[0]
@@ -110,17 +105,8 @@ class controller:
     self.joint4=Float64()
     self.joint4.data= q_d[3]
 
-    # Publishing the desired trajectory on a topic named trajectory(lab 3)
-    #x_d = self.trajectory()    # getting the desired trajectory
-    #self.trajectory_desired= Float64MultiArray()
-    #self.trajectory_desired.data=x_d
-
     # Publish the results
     try: 
-      #self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-      #self.joints_pub.publish(self.joints)
-      #self.end_effector_pub.publish(self.end_effector)
-      #self.trajectory_pub.publish(self.trajectory_desired)
       self.robot_joint1_pub.publish(self.joint1)
       self.robot_joint2_pub.publish(self.joint2)
       self.robot_joint3_pub.publish(self.joint3)

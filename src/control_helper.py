@@ -28,7 +28,7 @@ def forward_kinematics(angles):
 	#y = 3*c1*s3 + 3*c2*c3*s1 - 2*c1*s3*c4 + 2*s1*c2*c3*c4 - 2*s1*s2*s4
 	#z = 2*c2*s4 + 2*c3*c4*s2 + 3*c3*s2 + 2
 
-	x,y,z = 2*c1*c4*s3 + 3*c1*s3 + 2*c2*s1*s4 + 2*c3*c4*s1*s2 + 3*c3*s1*s2, -2*c1*c2*s4 - 2*c1*c3*c4*s2 - 3*c1*c3*s2 + 2*c4*s1*s3 + 3*s1*s3, 2*c2*c3*c4 + 3*c2*c3 - 2*s2*s4 + 2
+	x,y,z = 2*c1*c4*s3 + 3*c1*s3 + 2*c2*s1*s4 + 2*c3*c4*s1*s2 + 3*c3*s1*s2, -2*c1*c2*s4 - 2*c1*c3*c4*s2 - 3*c1*c3*s2 + 2*c4*s1*s3 + 3*s1*s3, 2*c2*c3*c4 + 3*c2*c3 - 2*s2*s4 + 2 + 0.5
 
 
 
@@ -76,5 +76,5 @@ def calculate_jacobian(angles):
 
 	return jacobian
 
-print(forward_kinematics([0,(np.pi/2),0,(-np.pi/2)]))
+#print(forward_kinematics([0,(np.pi/2),0,(-np.pi/2)]))
 #print(forward_kinematics([0,0,0,0]))

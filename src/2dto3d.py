@@ -42,6 +42,8 @@ class compute_dimensions:
       if math.isnan(joints1[i][0]):
         y, z = joints2[i]
         ys = y1
+        print(x1)
+        print(y1)
         ys[np.isnan(x1)] = np.nan
         closest_y = np.nanargmin(ys - y)
         x = joints2[closest_y][0]
@@ -68,11 +70,13 @@ class compute_dimensions:
     
     
     def f(x):
-      a, b, c = tuple(x)
-      return np.array([(2*sin(a)*sin(b)*cos(c) + 3*sin(a)*sin(b) + 2*sin(c)*cos(a)) - self.joint_coords[3][0], 2*sin(a)*sin(c) - 2*sin(b)*cos(a)*cos(c) - 3*sin(b)*cos(a) - self.joint_coords[3][1], 2*cos(b)*cos(c) + 3*cos(b) + 2], - self.joint_coords[3][2])
+      a, b, c, d = tuple(x)
+      f1, f2, f3 = 2*sin(a)*sin(b)*cos(c)*cos(d) + 3*sin(a)*sin(b)*cos(c) + 2*sin(a)*sin(d)*cos(b) + 2*sin(c)*cos(a)*cos(d) + 3*sin(c)*cos(a), 2*sin(a)*sin(c)*cos(d) + 3*sin(a)*sin(c) - 2*sin(b)*cos(a)*cos(c)*cos(d) - 3*sin(b)*cos(a)*cos(c) - 2*sin(d)*cos(a)*cos(b), -2*sin(b)*sin(d) + 2*cos(b)*cos(c)*cos(d) + 3*cos(b)*cos(c) + 2
+      f4 = 3*cos(b)*cos(c) + 2
+      return np.array([f1 - self.joint_coords[3][0], f2 - self.joint_coords[3][1], f1 - self.joint_coords[3][2], f1 - self.joint_coords[2][2]])
 
     
-    print(least_squares(f, np.zeros(3), bounds=(-0.5*np.pi, 0.5*np.pi)))
+    print(least_squares(f, np.zeros(4), bounds=(-0.5*np.pi, 0.5*np.pi)).x)
 
 
 # call the class

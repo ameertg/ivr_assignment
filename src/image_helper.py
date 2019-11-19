@@ -68,12 +68,12 @@ def detect_yellow(image):
     return np.array([cx, cy])
 
 def isolate_orange(image):
-    mask = cv2.inRange(image, (0, 100, 100), (100, 200, 250))
+    mask = cv2.inRange(image, (0, 100, 100), (100, 180, 250))
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     return contours
 
 def match_template(image, template):
-    threshold = 60000 # Threshold value for max error allowed for match
+    threshold = 20000 # Threshold value for max error allowed for match
     sums = []
     contours = isolate_orange(image)
     mask = np.zeros(image.shape)
@@ -89,9 +89,14 @@ def match_template(image, template):
 
       sums.append(np.sum(shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]]))
 
-    image = cv2.drawContours(image, contours[np.argmin(sums)], -1, (255), 3)
+    
     # Return contour with minimum distance if min. dist. is less than threshold
-    return(contours[np.argmin(sums)] if np.min(sums)<threshold else None)
+    if np.min(sums)<threshold:
+      image = cv2.drawContours(image, contours[np.argmin(sums)], -1, (255), 3)
+      return contours[np.argmin(sums)]
+    else:
+      print(np.min(sums))
+      return None
 
 
 

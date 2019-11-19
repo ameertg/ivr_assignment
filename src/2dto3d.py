@@ -22,7 +22,7 @@ class compute_dimensions:
 
   def __init__(self):
     rospy.init_node('compute_dimensions', anonymous=True)
-    self.joints_pub = rospy.Publisher("/joints", Float64MultiArray, queue_size=1)
+    self.joints_pub = rospy.Publisher("/joints", Float64MultiArray, queue_size=10)
     # Wait for two messages to appear one from joints1 and one from joints2
     self.joints_sub1 = message_filters.Subscriber("/joints1",Float64MultiArray)
     self.joints_sub2 = message_filters.Subscriber("/joints2",Float64MultiArray)
@@ -76,7 +76,11 @@ class compute_dimensions:
       return np.array([f1 - self.joint_coords[3][0], f2 - self.joint_coords[3][1], f1 - self.joint_coords[3][2], f1 - self.joint_coords[2][2]])
 
     
-    print(least_squares(f, np.zeros(4), bounds=(-0.5*np.pi, 0.5*np.pi)).x)
+    self.joint_states = Float64MultiArray()
+    self.joint_states.data = np.array(least_squares(f, np.zeros(4), bounds=(-0.5*np.pi, 0.5*np.pi)).x)
+    
+
+    self.joints_pub.publish(self.joint_states)
 
 
 # call the class

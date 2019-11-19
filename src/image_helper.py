@@ -68,12 +68,12 @@ def detect_yellow(image):
     return np.array([cx, cy])
 
 def isolate_orange(image):
-    mask = cv2.inRange(image, (0, 80, 100), (100, 180, 250))
+    mask = cv2.inRange(image, (0, 80, 100), (100, 200, 250))
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     return contours
 
 def match_template(image, template):
-    threshold = 20000 # Threshold value for max error allowed for match
+    threshold = np.inf # Threshold value for max error allowed for match
 
     sums = []
     contours = isolate_orange(image)
@@ -82,22 +82,24 @@ def match_template(image, template):
     dist = cv2.distanceTransform(cv2.bitwise_not(mask), cv2.DIST_C, 0)
     for contour in contours:
       x, y, width, height = cv2.boundingRect(contour)
+      # Ensure approximately correct dimensions
+      if width*height > 1.3 * template.shape[0] * template.shape[1]:
+        sums.append(np.inf)
+        continue
       if width <= 1 or height <= 1:
         sums.append(np.inf)
         continue
+
       # Reshape image to fit template
       shape = mask[y:y+height, x:x+width]
-      shape = cv2.resize(shape, (template.shape[1], template.shape[0]), interpolation=cv2.INTER_LINEAR)
-
+      shape = cv2.resize(shape, (template.shape[1], template.shape[0]))
       sums.append(np.sum(shape * dist[y:y+shape.shape[0], x:x+shape.shape[1]]))
-
     
     # Return contour with minimum distance if min. dist. is less than threshold
     if np.min(sums)<threshold:
       image = cv2.drawContours(image, contours[np.argmin(sums)], -1, (255), 3)
       return contours[np.argmin(sums)]
     else:
-      print(np.min(sums))
       return None
 
 

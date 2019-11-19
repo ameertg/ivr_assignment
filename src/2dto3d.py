@@ -24,6 +24,7 @@ class compute_dimensions:
     rospy.init_node('compute_dimensions', anonymous=True)
     self.joints_pub = rospy.Publisher("/joints", Float64MultiArray, queue_size=10)
     self.target_pub = rospy.Publisher("/target1", Float64MultiArray, queue_size=10)
+    self.end_effector_pub = rospy.Publisher("/end_effector", Float64MultiArray, queue_size=10)
     # Wait for two messages to appear one from joints1 and one from joints2
     self.joints_sub1 = message_filters.Subscriber("/joints1",Float64MultiArray)
     self.joints_sub2 = message_filters.Subscriber("/joints2",Float64MultiArray)
@@ -67,21 +68,24 @@ class compute_dimensions:
     self.joint_coords = np.array(self.joint_coords) - np.array(self.joint_coords[0])
     self.joint_coords = self.joint_coords * (2 / self.joint_coords[2][2])
     
-    
+    # Define a function that takes the joint states and uses forward kinematics 
     def f(x):
       a, b, c, d = tuple(x)
       f1, f2, f3 = 2*sin(a)*sin(b)*cos(c)*cos(d) + 3*sin(a)*sin(b)*cos(c) + 2*sin(a)*sin(d)*cos(b) + 2*sin(c)*cos(a)*cos(d) + 3*sin(c)*cos(a), 2*sin(a)*sin(c)*cos(d) + 3*sin(a)*sin(c) - 2*sin(b)*cos(a)*cos(c)*cos(d) - 3*sin(b)*cos(a)*cos(c) - 2*sin(d)*cos(a)*cos(b), -2*sin(b)*sin(d) + 2*cos(b)*cos(c)*cos(d) + 3*cos(b)*cos(c) + 2
       f4 = 3*cos(b)*cos(c) + 2
-      return np.array([f1 - self.joint_coords[3][0], f2 - self.joint_coords[3][1], f1 - self.joint_coords[3][2], f1 - self.joint_coords[2][2]])
+      return np.array([f1 - self.joint_coords[3][0], f2 - self.joint_coords[3][1], f3 - self.joint_coords[3][2], f4 - self.joint_coords[2][2]])
 
     
     self.joint_states = Float64MultiArray()
     self.joint_states.data = np.array(least_squares(f, np.zeros(4), bounds=(-0.5*np.pi, 0.5*np.pi)).x)
     self.target_coords = Float64MultiArray()
     self.target_coords.data= self.joint_coords[4]
+    self.end_effector = Float64MultiArray()
+    self.end_effector.data= self.joint_coords[3]
 
     self.joints_pub.publish(self.joint_states)
     self.target_pub.publish(self.target_coords)
+    self.end_effector_pub.publish(self.end_effector)
 
 
 # call the class

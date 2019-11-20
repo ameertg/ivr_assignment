@@ -10,6 +10,7 @@ from geometry_msgs.msg import Point
 from sensor_msgs.msg import Image, JointState
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
+import time
 
 import control_helper
 
@@ -34,14 +35,19 @@ class tester:
         # initialize the bridge between openCV and ROS
         self.bridge = CvBridge()
 
-        self.robot_pos_sub = rospy.Subscriber("/robot/joint_states",JointState,self.robotQCallback)
+        self.robot_q_sub = rospy.Subscriber("/robot/joint_states",JointState,self.robotQCallback)
         self.target_pos_sub = rospy.Subscriber("/target/joint_states",JointState,self.targetPosCallback)
+        self.robot_pos_sub = rospy.Subscriber("/end_effector",Float64MultiArray,self.robotPosEstCallback)
 
         self.robotQ = None
+        self.ImagePosEstimate = None
         self.target_position = np.array([0.0,0.0,0.0])
 
     def robotQCallback(self,data):
         self.robotQ = np.asarray(data.position)
+
+    def robotPosEstCallback(self,data):
+        self.ImagePosEstimate = data.data#np.asarray(data.position)
 
     def targetPosCallback(self,data):
         self.target_position = np.asarray(data.position)
@@ -72,9 +78,12 @@ class tester:
         print("\t\tFK Estimate\t\t\t\tImage Estimate")
         for jointState in jointSet:
             self.setQ(jointState)
+            time.sleep(5) # need to wait for ImagePosEstimate to update
             FKPosEstimate = control_helper.forward_kinematics(jointState)
-            ImagePosEstimate = [0,0,0] #TODO
+            ImagePosEstimate = self.ImagePosEstimate
+
             print("{}  {}  {}\t{}  {}  {}".format(FKPosEstimate[0],FKPosEstimate[1],FKPosEstimate[2],ImagePosEstimate[0],ImagePosEstimate[1],ImagePosEstimate[2]))
+            self.ImagePosEstimate = None
 
     def accuracyTest(self):
         if (self.robotQ is None): return
@@ -94,7 +103,7 @@ class tester:
  # call the class
 def main(args):
   t = tester()
-  t.tenPosTest()
+  #t.tenPosTest()
   try:
     rospy.spin()
   except KeyboardInterrupt:

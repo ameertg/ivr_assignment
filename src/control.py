@@ -29,7 +29,10 @@ class controller:
 
     #self.robot_pos_sub = rospy.Subscriber("/robot/joint_states",JointState,self.callback)
     self.robot_pos_sub = rospy.Subscriber("/joints",Float64MultiArray,self.callback)
-    self.target_pos_sub = rospy.Subscriber("/target/joint_states",JointState,self.targetPosCallback)
+    self.target_pos_sub = rospy.Subscriber("/target1",Float64MultiArray,self.targetPosCallback)    
+    #self.target_pos_sub = rospy.Subscriber("/target/joint_states",JointState,self.targetPosCallback)
+    
+
     # record the begining time
     self.time_trajectory = rospy.get_time()
     # initialize errors
@@ -42,12 +45,12 @@ class controller:
     self.end_effector_position = np.array([0.0,0.0,0.0,0.0])
     self.target_position = np.array([0.0,0.0,0.0])
 
-  def trajectory(self):
-    # get current time
-    cur_time = np.array([rospy.get_time() - self.time_trajectory])
-    x_d = float(6* np.cos(cur_time * np.pi/100))
-    y_d = float(6 + np.absolute(1.5* np.sin(cur_time * np.pi/100)))
-    return np.array([x_d, y_d])
+#  def trajectory(self):
+#    # get current time
+#    cur_time = np.array([rospy.get_time() - self.time_trajectory])
+#    x_d = float(6* np.cos(cur_time * np.pi/100))
+#    y_d = float(6 + np.absolute(1.5* np.sin(cur_time * np.pi/100)))
+#    return np.array([x_d, y_d])
 
   def control_closed(self,position):
     # P gain
@@ -81,7 +84,8 @@ class controller:
     thing
 
   def targetPosCallback(self,data):
-    self.target_position = np.asarray(data.position)
+    self.target_position = np.asarray(data.data)
+    #self.target_position = np.asarray(data.position)
 
   # Recieve data, process it, and publish
   def callback(self,data):
@@ -95,7 +99,7 @@ class controller:
 
     # send control commands to joints (lab 3)
     q_d = self.control_closed(data.data)
-    #q_d = self.control_open(cv_image)
+    #q_d = self.control_closed(data.position)
     self.joint1=Float64()
     self.joint1.data= q_d[0]
     self.joint2=Float64()

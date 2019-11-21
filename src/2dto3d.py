@@ -66,7 +66,7 @@ class compute_dimensions:
 
     # Scale and center
     self.joint_coords = np.array(self.joint_coords) - np.array(self.joint_coords[0])
-    self.joint_coords = self.joint_coords * 2 / np.sqrt((np.sum(np.square(self.joint_coords[2] - self.joint_coords[3]))))
+    self.joint_coords = self.joint_coords * 0.041
     self.joint_coords[:, 2] = -self.joint_coords[:, 2]
 
     # Define a function that takes the joint states and uses forward kinematics 

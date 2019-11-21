@@ -28,8 +28,8 @@ class controller:
     self.bridge = CvBridge()
 
     #self.robot_pos_sub = rospy.Subscriber("/robot/joint_states",JointState,self.callback)
-    self.robot_pos_sub = rospy.Subscriber("/joints",Float64MultiArray,self.callback)
-    self.target_pos_sub = rospy.Subscriber("/target1",Float64MultiArray,self.targetPosCallback)    
+    self.robot_pos_sub = rospy.Subscriber("assignment/joints",Float64MultiArray,self.callback)
+    self.target_pos_sub = rospy.Subscriber("assignment/target1",Float64MultiArray,self.targetPosCallback)    
     #self.target_pos_sub = rospy.Subscriber("/target/joint_states",JointState,self.targetPosCallback)
     
 

@@ -11,6 +11,8 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
 
+import os.path
+
 import image_helper
 
 
@@ -19,11 +21,11 @@ class image_converter:
   # Defines publisher and subscriber
   def __init__(self):
     # initialize the node named image_processing
-    rospy.init_node('image_processing', anonymous=True)
+    rospy.init_node('image1', anonymous=True)
     # initialize a publisher to send images from camera1 to a topic named image_topic1
     self.image_pub1 = rospy.Publisher("image_topic1",Image, queue_size = 1)
     # initialize a publisher to send joint coordinates from camera1 to joints
-    self.joints_pub1 = rospy.Publisher("joints1", Float64MultiArray, queue_size = 10)
+    self.joints_pub1 = rospy.Publisher("/assignment/joints1", Float64MultiArray, queue_size = 10)
     # initialize a subscriber to recieve messages rom a topic named /robot/camera1/image_raw and use callback function to recieve data
     self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw",Image,self.callback1)
     # initialize the bridge between openCV and ROS
@@ -50,7 +52,8 @@ class image_converter:
 
 
     # Load template files
-    self.ball_template = cv2.inRange(cv2.imread("src/ivr_assignment/ball1.png"), (200, 200, 200), (255, 255, 255))
+    self.ball_template = cv2.inRange(cv2.imread("ball1.png"), (200, 200, 200), (255, 255, 255))
+    
     # Detect orange ball
     ball = image_helper.match_template(self.cv_image1, self.ball_template)
     # Compute the coordinates of the centre of the ball
@@ -63,8 +66,8 @@ class image_converter:
 
     self.coords = Float64MultiArray()
     self.coords.data = np.array([yellow, blue, green, red, ball_coords]).flatten()
-    im1=cv2.imshow('window1', self.cv_image1)
-    cv2.waitKey(1)
+    #cv2.imshow('window1', self.cv_image1)
+    #cv2.waitKey(1)
 
     # Publish the results
     try: 

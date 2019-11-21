@@ -21,13 +21,13 @@ import image_helper
 class compute_dimensions:
 
   def __init__(self):
-    rospy.init_node('compute_dimensions', anonymous=True)
-    self.joints_pub = rospy.Publisher("/joints", Float64MultiArray, queue_size=10)
-    self.target_pub = rospy.Publisher("/target1", Float64MultiArray, queue_size=10)
-    self.end_effector_pub = rospy.Publisher("/end_effector", Float64MultiArray, queue_size=10)
+    rospy.init_node('to3d', anonymous=True)
+    self.joints_pub = rospy.Publisher("assignment/joints", Float64MultiArray, queue_size=10)
+    self.target_pub = rospy.Publisher("assignment/target1", Float64MultiArray, queue_size=10)
+    self.end_effector_pub = rospy.Publisher("assignment/end_effector", Float64MultiArray, queue_size=10)
     # Wait for two messages to appear one from joints1 and one from joints2
-    self.joints_sub1 = message_filters.Subscriber("/joints1",Float64MultiArray)
-    self.joints_sub2 = message_filters.Subscriber("/joints2",Float64MultiArray)
+    self.joints_sub1 = message_filters.Subscriber("assignment/joints1",Float64MultiArray)
+    self.joints_sub2 = message_filters.Subscriber("assignment/joints2",Float64MultiArray)
     self.TS = message_filters.ApproximateTimeSynchronizer([self.joints_sub1, self.joints_sub2], 1, 0.1, allow_headerless = True)
 
   # Callback function for joints

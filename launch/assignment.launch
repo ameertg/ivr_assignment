@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+<!--Spawn first node-->
+  <group ns="/"> 
+        <node name="image1" pkg="ivr_assignment" type="image1.py" cwd="node" />
+
+        <node name="image2" pkg="ivr_assignment" type="image2.py" cwd="node"/>
+
+        <node name="to3d" pkg="ivr_assignment" type="2dto3d.py" />
+
+        <node name="controller" pkg="ivr_assignment" type="control.py" />
+  </group>
+
+</launch>

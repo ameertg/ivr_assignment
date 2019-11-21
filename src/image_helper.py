@@ -69,7 +69,7 @@ def detect_yellow(image):
 
 def isolate_orange(image):
     mask = cv2.inRange(image, (0, 80, 100), (100, 200, 250))
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours,_ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     return contours
 
 def match_template(image, template):
